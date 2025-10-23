@@ -77,11 +77,99 @@
 
 		// Cleanup function
 		return () => {
+			console.log('🔴 SERIES CLEANUP STARTING', { type, paneIndex });
+
 			if (chart && series) {
+				// Store pane index before removing series
+				const seriesPaneIndex = paneIndex;
+
+				console.log('📊 Before removeSeries - panes:', chart.panes().length, 'panes:', chart.panes().map((p, i) => ({
+					index: i,
+					height: p.getHeight(),
+					seriesCount: p.getSeries().length
+				})));
+
+				// Remove the series
 				chart.removeSeries(series);
+
+				console.log('📊 After removeSeries - panes:', chart.panes().length, 'panes:', chart.panes().map((p, i) => ({
+					index: i,
+					height: p.getHeight(),
+					seriesCount: p.getSeries().length
+				})));
+
+				// Force chart to recalculate layout and remove empty panes
+				// The chart should auto-remove empty panes, but we need to trigger a layout update
+				requestAnimationFrame(() => {
+					if (chart) {
+						console.log('📊 In RAF - panes:', chart.panes().length);
+
+						// Try to get the pane and check if it still exists but is empty
+						try {
+							const panes = chart.panes();
+							console.log('🔍 Checking pane', seriesPaneIndex, 'total panes:', panes.length);
+
+							if (seriesPaneIndex !== undefined && seriesPaneIndex < panes.length) {
+								const pane = panes[seriesPaneIndex];
+								const seriesInPane = pane.getSeries().length;
+								console.log('🔍 Pane', seriesPaneIndex, 'has', seriesInPane, 'series');
+
+								// If pane exists and has no series, explicitly remove it
+								if (pane && seriesInPane === 0) {
+									console.log('🗑️ Removing empty pane', seriesPaneIndex);
+									chart.removePane(seriesPaneIndex);
+									console.log('✅ After removePane - panes:', chart.panes().length);
+								} else {
+									console.log('⚠️ Pane not empty, skipping removal');
+								}
+							} else {
+								console.log('⚠️ Pane index out of bounds or undefined');
+							}
+						} catch (e) {
+							// Pane might have been auto-removed already, which is fine
+							console.log('❌ Error checking/removing pane:', e);
+						}
+
+						console.log('📊 Final state - panes:', chart.panes().length);
+
+						// AGGRESSIVE: Force multiple visual updates to ensure DOM is redrawn
+						requestAnimationFrame(() => {
+							if (chart) {
+								console.log('🔥 FORCING VISUAL UPDATES');
+
+								// 1. Force resize to trigger layout recalculation
+								const container = chart.chartElement();
+								if (container) {
+									const width = container.clientWidth;
+									const height = container.clientHeight;
+									console.log('📐 Forcing resize:', { width, height });
+									chart.resize(width, height, true);
+								}
+
+								// 2. Force time scale update
+								const timeScale = chart.timeScale();
+								const visibleRange = timeScale.getVisibleLogicalRange();
+								if (visibleRange) {
+									timeScale.setVisibleLogicalRange(visibleRange);
+								}
+
+								// 3. Try to force a full redraw by toggling options
+								requestAnimationFrame(() => {
+									if (chart) {
+										console.log('🔥 Final RAF - applying options to force redraw');
+										const currentOptions = chart.options();
+										chart.applyOptions(currentOptions);
+										console.log('✅ ALL VISUAL UPDATES COMPLETE');
+									}
+								});
+							}
+						});
+					}
+				});
 			}
 			onDestroy?.();
 			series = undefined;
+			console.log('✅ SERIES CLEANUP COMPLETE');
 		};
 	});
 

@@ -130,6 +130,11 @@
 	}
 
 	function removeAllPanes() {
+		console.log('🎯🎯🎯 removeAllPanes called');
+		if (chart) {
+			console.log('📊 Panes before removeAllPanes:', chart.panes().length);
+		}
+
 		// Just toggle state - Svelte will handle cleanup
 		showVolume = false;
 		showRSI = false;
@@ -140,50 +145,56 @@
 		macdSeries = undefined;
 		macdSignalSeries = undefined;
 		macdHistogramSeries = undefined;
+
+		console.log('✅ All states set to false, cleanup should trigger for all series');
 	}
 
 	function removePane(paneIndex: number) {
-		if (!chart) return;
+		console.log('🎯 removePane called with index:', paneIndex);
+
+		if (!chart) {
+			console.log('⚠️ No chart instance');
+			return;
+		}
+
+		console.log('📊 Current panes before removal:', chart.panes().length);
+		chart.panes().forEach((p, i) => {
+			console.log(`  Pane ${i}:`, {
+				height: p.getHeight(),
+				seriesCount: p.getSeries().length,
+				series: p.getSeries().map(s => s.options())
+			});
+		});
 
 		const identifier = getPaneIdentifier(paneIndex);
-		
+		console.log('🏷️ Pane identifier:', identifier);
+
 		// Toggle state to trigger Svelte's reactive unmounting of Series components
+		// The Series component cleanup will handle pane removal automatically
 		switch (identifier) {
 			case 'volume':
+				console.log('🔴 Removing volume pane');
 				showVolume = false;
 				volumeSeries = undefined;
 				break;
 			case 'rsi':
+				console.log('🔴 Removing RSI pane');
 				showRSI = false;
 				rsiSeries = undefined;
 				break;
 			case 'macd':
+				console.log('🔴 Removing MACD pane');
 				showMACD = false;
 				macdSeries = undefined;
 				macdSignalSeries = undefined;
 				macdHistogramSeries = undefined;
 				break;
+			default:
+				console.log('⚠️ Unknown identifier:', identifier);
 		}
-		
-		// Use requestAnimationFrame to ensure Svelte's DOM updates have been flushed
-		// Then force remove the pane to ensure it disappears immediately
-		requestAnimationFrame(() => {
-			if (chart) {
-				try {
-					const panes = chart.panes();
-					// Check if pane still exists before trying to remove
-					if (panes[paneIndex]) {
-						chart.removePane(paneIndex);
-					}
-					// Force a visual update
-					chart.timeScale().fitContent();
-				} catch (e) {
-					console.log('Pane already removed:', e);
-				}
-			}
-		});
 
 		hoveredPaneIndex = null;
+		console.log('✅ State updated, cleanup should trigger');
 	}
 
 	function movePaneUp(paneIndex: number) {
