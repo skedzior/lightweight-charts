@@ -141,6 +141,7 @@ export class VolumeProfile implements ISeriesPrimitive<Time> {
 	_minPrice: number;
 	_maxPrice: number;
 	_paneViews: VolumeProfilePaneView[];
+	_requestUpdate?: () => void;
 
 	_vpIndex: number | null = null;
 
@@ -165,7 +166,50 @@ export class VolumeProfile implements ISeriesPrimitive<Time> {
 
 		this._paneViews = [new VolumeProfilePaneView(this)];
 	}
+
+	attached(param: { chart: IChartApi; series: ISeriesApi<keyof SeriesOptionsMap>; requestUpdate: () => void }) {
+		console.log('🔗 VolumeProfile attached, requestUpdate:', !!param.requestUpdate);
+		this._requestUpdate = param.requestUpdate;
+	}
+
+	detached() {
+		console.log('❌ VolumeProfile detached');
+		this._requestUpdate = undefined;
+	}
+
+	updateData(vpData: VolumeProfileData) {
+		console.log('📥 VolumeProfile.updateData called with:', {
+			time: vpData.time,
+			width: vpData.width,
+			profileLength: vpData.profile?.length
+		});
+		
+		this._vpData = vpData;
+		this._minPrice = Infinity;
+		this._maxPrice = -Infinity;
+
+		// Safely iterate over profile if it exists
+		if (this._vpData.profile && Array.isArray(this._vpData.profile)) {
+			this._vpData.profile.forEach(vpData => {
+				if (vpData.price < this._minPrice) this._minPrice = vpData.price;
+				if (vpData.price > this._maxPrice) this._maxPrice = vpData.price;
+			});
+		}
+
+		console.log('🎨 Calling updateAllViews');
+		this.updateAllViews();
+		
+		// Request the series to update
+		if (this._requestUpdate) {
+			console.log('🔔 Calling requestUpdate');
+			this._requestUpdate();
+		} else {
+			console.warn('⚠️ No requestUpdate callback available!');
+		}
+	}
+
 	updateAllViews() {
+		console.log('🖼️ Updating', this._paneViews.length, 'views');
 		this._paneViews.forEach(pw => pw.update());
 	}
 

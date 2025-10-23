@@ -26,6 +26,7 @@
 		}
 
 		// Attach primitive to series
+		// The series will call primitive.attached({ chart, series, requestUpdate })
 		series.attachPrimitive(primitive);
 		onAttach?.();
 
@@ -36,14 +37,5 @@
 			}
 			onDetach?.();
 		};
-	});
-
-	// Reactively update primitive when it changes (if mutable)
-	$effect(() => {
-		// If the primitive has a requestUpdate method and it changes,
-		// we can trigger an update
-		if (primitive && 'requestUpdate' in primitive && typeof primitive.requestUpdate === 'function') {
-			primitive.requestUpdate();
-		}
 	});
 </script>

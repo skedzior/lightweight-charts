@@ -75,28 +75,53 @@
 			});
 		}
 
-		return {
+		const data = {
 			time: lineData[vpPosition].time,
 			profile,
 			width: vpWidth
 		};
+		
+		console.log('📊 volumeProfileData derived:', {
+			position: vpPosition,
+			width: vpWidth,
+			bins: vpBins,
+			profileLength: profile.length,
+			time: data.time
+		});
+		
+		return data;
 	});
 
 	// Create volume profile primitive
 	let volumeProfile = $state<VolumeProfile | undefined>();
 
+	// Initialize the volume profile once
 	$effect(() => {
+		console.log('🎯 Init effect running, chart:', !!chart, 'series:', !!lineSeries);
 		if (!chart || !lineSeries) return;
-
-		// Create new volume profile with current data
+		
+		// Create the volume profile primitive
 		const profile = new VolumeProfile(chart, lineSeries, volumeProfileData);
 		volumeProfile = profile;
+		console.log('✅ VolumeProfile created');
 
-		// Cleanup - will run when volumeProfileData changes or component unmounts
+		// Cleanup when chart/series changes
 		return () => {
-			// The SeriesPlugin component will handle detachment
+			console.log('🧹 Cleaning up VolumeProfile');
 			volumeProfile = undefined;
 		};
+	});
+
+	// Update volume profile data when parameters change
+	$effect(() => {
+		console.log('🔄 Update effect running, volumeProfile:', !!volumeProfile);
+		if (!volumeProfile) return;
+		
+		console.log('📤 Calling updateData with:', volumeProfileData);
+		// Update the existing primitive with new data
+		// This will automatically trigger requestUpdate()
+		volumeProfile.updateData(volumeProfileData);
+		console.log('✅ updateData called');
 	});
 
 	function toggleTheme() {

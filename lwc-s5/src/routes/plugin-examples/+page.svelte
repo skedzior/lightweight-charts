@@ -209,6 +209,11 @@
 
 	<!-- Navigation Links -->
 	<div class="nav-grid">
+		<a href="/plugin-examples/series-markers" class="nav-card">
+			<span class="icon">📍</span>
+			<h3>Series Markers</h3>
+			<p>Annotate charts with custom markers</p>
+		</a>
 		<a href="/plugin-examples/heatmap-bell-curve" class="nav-card">
 			<span class="icon">📊</span>
 			<h3>Heatmap Bell Curve</h3>

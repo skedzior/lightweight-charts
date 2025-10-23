@@ -4,6 +4,7 @@ export { default as Series } from './Series.svelte';
 export { default as CustomSeries } from './CustomSeries.svelte';
 export { default as SeriesPlugin } from './SeriesPlugin.svelte';
 export { default as PanePlugin } from './PanePlugin.svelte';
+export { default as SeriesMarkers } from './SeriesMarkers.svelte';
 
 // Types
 export type {
@@ -31,5 +32,11 @@ export type {
 	DeepPartial,
 	Time,
 	ISeriesPrimitiveBase,
-	IPanePrimitiveBase
+	IPanePrimitiveBase,
+	SeriesMarker,
+	SeriesMarkerShape,
+	SeriesMarkerPosition
 } from 'lightweight-charts';
+
+// Re-export marker creation function
+export { createSeriesMarkers } from 'lightweight-charts';
