@@ -82,9 +82,9 @@
 	let isStreaming = $state(false);
 	let streamInterval: ReturnType<typeof setInterval> | undefined;
 
-	// Initialize plugin once (don't depend on pluginOptions to avoid recreation on every change)
+	// Initialize plugin once with initial options (use untrack to avoid dependency)
 	$effect(() => {
-		const plugin = new TradeBubbles();
+		const plugin = new TradeBubbles(untrack(() => pluginOptions));
 		tradeBubbles = plugin;
 
 		// Add some initial sample trades
