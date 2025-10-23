@@ -158,9 +158,6 @@
 		<a href="/plugin-examples" class="plugin-link">
 			🔌 Advanced Plugin Examples →
 		</a>
-		<a href="/price-manager" class="plugin-link manager-link">
-			🎯 Combined Price Manager →
-		</a>
 		<a href="/pane-examples" class="plugin-link pane-link">
 			📊 Multi-Pane Charts →
 		</a>

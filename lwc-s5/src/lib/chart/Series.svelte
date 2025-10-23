@@ -40,7 +40,7 @@
 	});
 
 	// Map of series type to constructor
-	const seriesTypeMap: Record<SeriesType, any> = {
+	const seriesTypeMap: Partial<Record<SeriesType, any>> = {
 		Candlestick: CandlestickSeries,
 		Line: LineSeries,
 		Area: AreaSeries,
