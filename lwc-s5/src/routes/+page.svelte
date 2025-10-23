@@ -155,6 +155,9 @@
 	<h1>Lightweight Charts Svelte 5 Wrapper Demo</h1>
 
 	<div class="nav-links">
+		<a href="/chart-playground" class="plugin-link playground-link">
+			🎮 Chart Playground (Object Tree) →
+		</a>
 		<a href="/plugin-examples" class="plugin-link">
 			🔌 Advanced Plugin Examples →
 		</a>
@@ -276,6 +279,12 @@
 	.pane-link {
 		background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
 		margin-left: 0.5rem;
+	}
+
+	.playground-link {
+		background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+		margin-left: 0;
+		margin-bottom: 0.5rem;
 	}
 
 	.controls {

@@ -5,6 +5,7 @@ export { default as CustomSeries } from './CustomSeries.svelte';
 export { default as SeriesPlugin } from './SeriesPlugin.svelte';
 export { default as PanePlugin } from './PanePlugin.svelte';
 export { default as SeriesMarkers } from './SeriesMarkers.svelte';
+export { default as ObjectTree } from './ObjectTree.svelte';
 
 // Types
 export type {
