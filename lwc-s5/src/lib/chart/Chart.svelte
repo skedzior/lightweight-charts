@@ -81,7 +81,7 @@
 	});
 
 	// Computed styles for container
-	const containerStyle = $derived(() => {
+	const containerStyle = $derived.by(() => {
 		const styles: Record<string, string> = {
 			position: 'relative'
 		};
@@ -111,7 +111,7 @@
 
 <div
 	bind:this={chartContainer}
-	style={containerStyle()}
+	style={containerStyle}
 	class="lwc-chart-container"
 >
 	{#if chart}

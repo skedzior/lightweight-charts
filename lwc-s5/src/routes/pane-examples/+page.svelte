@@ -130,71 +130,40 @@
 	}
 
 	function removeAllPanes() {
-		console.log('🎯🎯🎯 removeAllPanes called');
-		if (chart) {
-			console.log('📊 Panes before removeAllPanes:', chart.panes().length);
-		}
-
-		// Just toggle state - Svelte will handle cleanup
 		showVolume = false;
 		showRSI = false;
 		showMACD = false;
-		// Clear series references
 		volumeSeries = undefined;
 		rsiSeries = undefined;
 		macdSeries = undefined;
 		macdSignalSeries = undefined;
 		macdHistogramSeries = undefined;
-
-		console.log('✅ All states set to false, cleanup should trigger for all series');
 	}
 
 	function removePane(paneIndex: number) {
-		console.log('🎯 removePane called with index:', paneIndex);
-
-		if (!chart) {
-			console.log('⚠️ No chart instance');
-			return;
-		}
-
-		console.log('📊 Current panes before removal:', chart.panes().length);
-		chart.panes().forEach((p, i) => {
-			console.log(`  Pane ${i}:`, {
-				height: p.getHeight(),
-				seriesCount: p.getSeries().length,
-				series: p.getSeries().map(s => s.options())
-			});
-		});
+		if (!chart) return;
 
 		const identifier = getPaneIdentifier(paneIndex);
-		console.log('🏷️ Pane identifier:', identifier);
 
 		// Toggle state to trigger Svelte's reactive unmounting of Series components
-		// The Series component cleanup will handle pane removal automatically
 		switch (identifier) {
 			case 'volume':
-				console.log('🔴 Removing volume pane');
 				showVolume = false;
 				volumeSeries = undefined;
 				break;
 			case 'rsi':
-				console.log('🔴 Removing RSI pane');
 				showRSI = false;
 				rsiSeries = undefined;
 				break;
 			case 'macd':
-				console.log('🔴 Removing MACD pane');
 				showMACD = false;
 				macdSeries = undefined;
 				macdSignalSeries = undefined;
 				macdHistogramSeries = undefined;
 				break;
-			default:
-				console.log('⚠️ Unknown identifier:', identifier);
 		}
 
 		hoveredPaneIndex = null;
-		console.log('✅ State updated, cleanup should trigger');
 	}
 
 	function movePaneUp(paneIndex: number) {
@@ -358,7 +327,6 @@
 			autoResize={true}
 			onCreate={(c) => {
 				chart = c;
-				console.log('Multi-pane chart created!');
 			}}
 		>
 			<!-- Main candlestick series (pane 0) -->
@@ -366,7 +334,6 @@
 				type="Candlestick"
 				reactiveData={chartData}
 				options={candlestickOptions}
-				onCreate={(series) => console.log('Candlestick series created!')}
 			/>
 
 			<!-- Volume series (pane 1) -->
@@ -385,7 +352,6 @@
 					}}
 					onCreate={(series) => {
 						volumeSeries = series;
-						console.log('Volume series created!');
 					}}
 				/>
 			{/if}
@@ -405,7 +371,6 @@
 					}}
 					onCreate={(series) => {
 						rsiSeries = series;
-						console.log('RSI series created!');
 						// Add RSI reference lines
 						series.createPriceLine({
 							price: 70,
@@ -440,7 +405,6 @@
 					}}
 					onCreate={(series) => {
 						macdHistogramSeries = series;
-						console.log('MACD Histogram created!');
 					}}
 				/>
 
@@ -457,7 +421,6 @@
 					}}
 					onCreate={(series) => {
 						macdSeries = series;
-						console.log('MACD line created!');
 					}}
 				/>
 
@@ -474,7 +437,6 @@
 					}}
 					onCreate={(series) => {
 						macdSignalSeries = series;
-						console.log('MACD signal line created!');
 					}}
 				/>
 			{/if}
