@@ -205,7 +205,26 @@
 
 <div class="container">
 	<h1>Plugin Examples</h1>
-	<p class="subtitle">Advanced plugin demonstrations with user-price-alerts and heatmap-series</p>
+	<p class="subtitle">Advanced plugin demonstrations with interactive features</p>
+
+	<!-- Navigation Links -->
+	<div class="nav-grid">
+		<a href="/plugin-examples/heatmap-bell-curve" class="nav-card">
+			<span class="icon">📊</span>
+			<h3>Heatmap Bell Curve</h3>
+			<p>Probability distributions with bell curves</p>
+		</a>
+		<a href="/plugin-examples/expiring-alerts" class="nav-card">
+			<span class="icon">🔔</span>
+			<h3>Expiring Price Alerts</h3>
+			<p>Time-bounded price level notifications</p>
+		</a>
+		<a href="/plugin-examples/volume-profile" class="nav-card">
+			<span class="icon">📊</span>
+			<h3>Volume Profile</h3>
+			<p>Volume distribution across price levels</p>
+		</a>
+	</div>
 
 	<!-- User Price Alerts Example -->
 	<section class="example-section">
@@ -634,5 +653,49 @@
 		.chart-wrapper {
 			border-color: #444;
 		}
+	}
+
+	.nav-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+		gap: 1.5rem;
+		margin: 2rem 0 3rem 0;
+	}
+
+	.nav-card {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+		padding: 2rem;
+		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+		border-radius: 12px;
+		text-decoration: none;
+		color: white;
+		transition: all 0.3s ease;
+		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+	}
+
+	.nav-card:hover {
+		transform: translateY(-5px);
+		box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+	}
+
+	.nav-card .icon {
+		font-size: 3rem;
+		margin-bottom: 1rem;
+	}
+
+	.nav-card h3 {
+		margin: 0 0 0.5rem 0;
+		font-size: 1.3rem;
+		color: white;
+	}
+
+	.nav-card p {
+		margin: 0;
+		font-size: 0.95rem;
+		opacity: 0.9;
+		color: white;
 	}
 </style>

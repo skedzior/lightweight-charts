@@ -81,7 +81,15 @@
 				const seriesPaneIndex = paneIndex;
 
 				// Remove the series from the chart
-				chart.removeSeries(series);
+				try {
+					chart.removeSeries(series);
+				} catch (e) {
+					// Chart might already be disposed
+					console.warn('Error removing series:', e);
+					onDestroy?.();
+					series = undefined;
+					return;
+				}
 
 				// Force visual update: The chart removes empty panes from the model,
 				// but doesn't always update the DOM immediately. We use cascading
@@ -99,24 +107,32 @@
 							}
 						}
 					} catch (e) {
-						// Pane might have been auto-removed already
+						// Pane might have been auto-removed already or chart disposed
 					}
 
 					// Force DOM update with cascading RAF
 					requestAnimationFrame(() => {
 						if (!chart) return;
 
-						// Force resize to trigger layout recalculation
-						const container = chart.chartElement();
-						if (container) {
-							chart.resize(container.clientWidth, container.clientHeight, true);
-						}
+						try {
+							// Force resize to trigger layout recalculation
+							const container = chart.chartElement();
+							if (container) {
+								chart.resize(container.clientWidth, container.clientHeight, true);
+							}
 
-						// Final RAF to ensure complete redraw
-						requestAnimationFrame(() => {
-							if (!chart) return;
-							chart.applyOptions(chart.options());
-						});
+							// Final RAF to ensure complete redraw
+							requestAnimationFrame(() => {
+								if (!chart) return;
+								try {
+									chart.applyOptions(chart.options());
+								} catch (e) {
+									// Chart might be disposed
+								}
+							});
+						} catch (e) {
+							// Chart might be disposed
+						}
 					});
 				});
 			}

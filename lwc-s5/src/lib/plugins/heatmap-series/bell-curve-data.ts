@@ -1,5 +1,5 @@
-import { LineData } from 'lightweight-charts';
-import { HeatMapData } from './data';
+import type { LineData } from 'lightweight-charts';
+import type { HeatMapData } from './data';
 
 export function generateBellCurve(
 	center: number,

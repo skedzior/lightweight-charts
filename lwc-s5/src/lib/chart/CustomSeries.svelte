@@ -69,6 +69,11 @@
 			return;
 		}
 
+		if (!view) {
+			console.error('CustomSeries requires a view prop');
+			return;
+		}
+
 		// Create custom series
 		series = chart.addCustomSeries(view, options);
 
@@ -83,8 +88,40 @@
 		// Cleanup function
 		return () => {
 			if (chart && series) {
-				chart.removeSeries(series);
+				// Remove the series from the chart
+				try {
+					chart.removeSeries(series);
+				} catch (e) {
+					// Chart might already be disposed
+					console.warn('Error removing custom series:', e);
+				}
+
+				// Force visual update using the same approach as Series.svelte
+				requestAnimationFrame(() => {
+					if (!chart) return;
+
+					try {
+						// Force resize to trigger layout recalculation
+						const container = chart.chartElement();
+						if (container) {
+							chart.resize(container.clientWidth, container.clientHeight, true);
+						}
+
+						// Final RAF to ensure complete redraw
+						requestAnimationFrame(() => {
+							if (!chart) return;
+							try {
+								chart.applyOptions(chart.options());
+							} catch (e) {
+								// Chart might be disposed
+							}
+						});
+					} catch (e) {
+						// Chart might be disposed
+					}
+				});
 			}
+
 			onDestroy?.();
 			series = undefined;
 		};
@@ -98,7 +135,8 @@
 	});
 
 	// Reactively update series data when reactiveData changes
-	$effect(() => {
+	// Use $effect.pre to ensure data updates happen before rendering
+	$effect.pre(() => {
 		if (series && reactiveData && reactiveData.length > 0) {
 			series.setData(reactiveData);
 		}

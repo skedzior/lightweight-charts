@@ -1,4 +1,4 @@
-import { BitmapPositionLength } from './common';
+import type { BitmapPositionLength } from './common';
 
 function centreOffset(lineBitmapWidth: number): number {
 	return Math.floor(lineBitmapWidth * 0.5);

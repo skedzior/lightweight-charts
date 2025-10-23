@@ -1,13 +1,16 @@
-import {
-	DataChangedScope,
+import type {
 	IChartApi,
 	ISeriesApi,
 	ISeriesPrimitive,
 	SeriesAttachedParameter,
 	SeriesOptionsMap,
 	Time,
+	DataChangedScope
 } from 'lightweight-charts';
 import { ensureDefined } from './helpers/assertions';
+
+// Re-export for use by plugins
+export type { DataChangedScope };
 
 export abstract class PluginBase implements ISeriesPrimitive<Time> {
 	private _chart: IChartApi | undefined = undefined;
