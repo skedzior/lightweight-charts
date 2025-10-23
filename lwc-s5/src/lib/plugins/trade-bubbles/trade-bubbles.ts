@@ -2,8 +2,8 @@ import type {
 	ISeriesPrimitive,
 	SeriesAttachedParameter,
 	Time,
-	ISeriesPrimitivePaneView,
-	SeriesPrimitivePaneViewZOrder,
+	IPrimitivePaneView,
+	PrimitivePaneViewZOrder,
 	ISeriesApi,
 	SeriesType,
 	AutoscaleInfo,
@@ -18,14 +18,14 @@ interface TradeBubble extends TradeBubblesData {
 	radius?: number;
 }
 
-class TradeBubblesPaneView implements ISeriesPrimitivePaneView {
+class TradeBubblesPaneView implements IPrimitivePaneView {
 	_source: TradeBubbles;
 
 	constructor(source: TradeBubbles) {
 		this._source = source;
 	}
 
-	zOrder(): SeriesPrimitivePaneViewZOrder {
+	zOrder(): PrimitivePaneViewZOrder {
 		return 'normal';
 	}
 
@@ -194,7 +194,12 @@ export class TradeBubbles implements ISeriesPrimitive<Time> {
 	 */
 	applyOptions(options: Partial<TradeBubblesOptions>) {
 		this._options = { ...this._options, ...options };
-		this._updateCoordinates();
+
+		// If scaling algorithm or radius range changed, we need to recalculate all radii
+		if (this._trades.length > 0) {
+			this._updateCoordinates();
+		}
+
 		this._requestUpdate?.();
 	}
 

@@ -2,7 +2,7 @@
 	import { Chart, Series, SeriesPlugin } from '$lib';
 	import { TradeBubbles, type TradeBubblesData, type TradeBubblesOptions } from '$lib/plugins/trade-bubbles';
 	import type { ChartOptions, CandlestickData, DeepPartial } from 'lightweight-charts';
-	import { onDestroy } from 'svelte';
+	import { onDestroy, untrack } from 'svelte';
 
 	// Generate sample candlestick data
 	function generateCandleData(count: number): CandlestickData[] {
@@ -82,9 +82,9 @@
 	let isStreaming = $state(false);
 	let streamInterval: ReturnType<typeof setInterval> | undefined;
 
-	// Initialize plugin
+	// Initialize plugin once (don't depend on pluginOptions to avoid recreation on every change)
 	$effect(() => {
-		const plugin = new TradeBubbles(pluginOptions);
+		const plugin = new TradeBubbles();
 		tradeBubbles = plugin;
 
 		// Add some initial sample trades
