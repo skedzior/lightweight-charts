@@ -161,6 +161,9 @@
 		<a href="/pane-examples" class="plugin-link pane-link">
 			📊 Multi-Pane Charts →
 		</a>
+		<a href="/indicator-examples" class="plugin-link indicator-link">
+			📈 Technical Indicators →
+		</a>
 	</div>
 
 	<div class="controls">
