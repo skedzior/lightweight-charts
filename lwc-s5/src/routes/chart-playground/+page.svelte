@@ -236,6 +236,54 @@
 		];
 	}
 
+	// ===== SERIES REFERENCES =====
+	interface SeriesInfo {
+		series: any; // ISeriesApi
+		type: any; // SeriesType
+		data: any[];
+		options: any;
+	}
+
+	let seriesRefs = $state<Map<string, SeriesInfo>>(new Map());
+
+	// Dynamic pane indices for each series
+	let paneIndices = $state<Record<string, number>>({
+		candlestick: 0,
+		volume: 1,
+		rsi: 2,
+		macd: 3,
+		'macd-signal': 3,
+		'macd-histogram': 3
+	});
+
+	// Update series data references when data changes
+	$effect(() => {
+		const candlestickRef = seriesRefs.get('candlestick');
+		if (candlestickRef) {
+			candlestickRef.data = chartData;
+		}
+		const volumeRef = seriesRefs.get('volume');
+		if (volumeRef) {
+			volumeRef.data = volumeData;
+		}
+		const rsiRef = seriesRefs.get('rsi');
+		if (rsiRef) {
+			rsiRef.data = rsiData;
+		}
+		const macdRef = seriesRefs.get('macd');
+		if (macdRef) {
+			macdRef.data = macdData;
+		}
+		const macdSignalRef = seriesRefs.get('macd-signal');
+		if (macdSignalRef) {
+			macdSignalRef.data = macdSignalData;
+		}
+		const macdHistogramRef = seriesRefs.get('macd-histogram');
+		if (macdHistogramRef) {
+			macdHistogramRef.data = macdHistogramData;
+		}
+	});
+
 	// ===== OBJECT TREE =====
 	interface ChartObject {
 		id: string;
@@ -255,7 +303,7 @@
 				id: 'candlestick',
 				type: 'series',
 				name: 'Main Chart',
-				paneIndex: 0,
+				paneIndex: paneIndices['candlestick'] ?? 0,
 				visible: showCandlestick,
 				seriesType: 'Candlestick'
 			});
@@ -267,7 +315,7 @@
 				id: 'volume',
 				type: 'indicator',
 				name: 'Volume',
-				paneIndex: 1,
+				paneIndex: paneIndices['volume'] ?? 1,
 				visible: showVolume,
 				seriesType: 'Histogram'
 			});
@@ -279,7 +327,7 @@
 				id: 'rsi',
 				type: 'indicator',
 				name: 'RSI',
-				paneIndex: 2,
+				paneIndex: paneIndices['rsi'] ?? 2,
 				visible: showRSI,
 				seriesType: 'Line'
 			});
@@ -291,7 +339,7 @@
 				id: 'macd',
 				type: 'indicator',
 				name: 'MACD',
-				paneIndex: 3,
+				paneIndex: paneIndices['macd'] ?? 3,
 				visible: showMACD,
 				seriesType: 'Line'
 			});
@@ -301,7 +349,7 @@
 				id: 'macd-signal',
 				type: 'indicator',
 				name: 'MACD Signal',
-				paneIndex: 3,
+				paneIndex: paneIndices['macd-signal'] ?? 3,
 				visible: showMACDSignal,
 				seriesType: 'Line'
 			});
@@ -311,7 +359,7 @@
 				id: 'macd-histogram',
 				type: 'indicator',
 				name: 'MACD Histogram',
-				paneIndex: 3,
+				paneIndex: paneIndices['macd-histogram'] ?? 3,
 				visible: showMACDHistogram,
 				seriesType: 'Histogram'
 			});
@@ -323,7 +371,7 @@
 				id: 'trade-bubbles',
 				type: 'primitive',
 				name: 'Trade Bubbles',
-				paneIndex: 0,
+				paneIndex: paneIndices['candlestick'] ?? 0, // Follows candlestick
 				visible: showTradeBubbles
 			});
 		}
@@ -334,7 +382,7 @@
 				id: 'markers',
 				type: 'marker',
 				name: `Series Markers (${markers.length})`,
-				paneIndex: 0,
+				paneIndex: paneIndices['candlestick'] ?? 0, // Follows candlestick
 				visible: showMarkers
 			});
 		}
@@ -402,6 +450,35 @@
 		}
 	}
 
+	function handleReorder(reorderedObjects: ChartObject[]) {
+		// Log the reordered objects (visual order only)
+		console.log('Objects reordered:', reorderedObjects.map(o => o.name));
+		// Note: The actual rendering order is still controlled by component order in template
+		// This just provides visual feedback in the object tree
+	}
+
+	function handleMoveToPane(objectId: string, targetPane: number) {
+		console.log(`Moving ${objectId} to pane ${targetPane}`);
+
+		// Markers and primitives move with their parent series (candlestick)
+		if (objectId === 'markers' || objectId === 'trade-bubbles') {
+			console.log(`${objectId} cannot be moved independently - they move with their parent series`);
+			return;
+		}
+
+		const currentPane = paneIndices[objectId];
+		if (currentPane === targetPane) {
+			console.log(`Series ${objectId} is already in pane ${targetPane}`);
+			return;
+		}
+
+		// For all series, just update the paneIndex and let the {#key} block handle re-rendering
+		// This is the reactive Svelte approach - cleaner and more reliable
+		paneIndices[objectId] = targetPane;
+		paneIndices = { ...paneIndices }; // Trigger reactivity
+		console.log(`Successfully moved ${objectId} to pane ${targetPane}`);
+	}
+
 	let chart: IChartApi | undefined = $state();
 </script>
 
@@ -415,53 +492,134 @@
 		<!-- Left Side: Chart -->
 		<div class="chart-section">
 			<div class="chart-container">
-				<Chart options={chartOptions} bind:chart>
+				<Chart
+					options={chartOptions}
+					onCreate={(c) => {
+						chart = c;
+						console.log('Chart created and bound!', !!chart);
+					}}
+				>
 					<!-- Main Candlestick Chart -->
 					{#if showCandlestick}
-						<Series type="Candlestick" data={chartData} options={{ upColor: '#26a69a', downColor: '#ef5350' }}>
-							{#if showTradeBubbles && tradeBubbles}
-								<SeriesPlugin primitive={tradeBubbles} />
-							{/if}
-							{#if showMarkers}
-								<SeriesMarkers {markers} />
-							{/if}
-						</Series>
+						{#key paneIndices['candlestick']}
+							<Series
+								type="Candlestick"
+								data={chartData}
+								paneIndex={paneIndices['candlestick']}
+								options={{ upColor: '#26a69a', downColor: '#ef5350' }}
+								onCreate={(series) => {
+									seriesRefs.set('candlestick', {
+										series,
+										type: 'Candlestick',
+										data: chartData,
+										options: { upColor: '#26a69a', downColor: '#ef5350' }
+									});
+								}}
+							>
+								{#if showTradeBubbles && tradeBubbles}
+									<SeriesPlugin primitive={tradeBubbles} />
+								{/if}
+								{#if showMarkers}
+									<SeriesMarkers {markers} />
+								{/if}
+							</Series>
+						{/key}
 					{/if}
 
 					<!-- Volume Pane -->
 					{#if showVolume}
-						<Series type="Histogram" data={volumeData} paneIndex={1} />
+						{#key paneIndices['volume']}
+							<Series
+								type="Histogram"
+								data={volumeData}
+								paneIndex={paneIndices['volume']}
+								onCreate={(series) => {
+									console.log('Volume series created!');
+									seriesRefs.set('volume', {
+										series,
+										type: 'Histogram',
+										data: volumeData,
+										options: {}
+									});
+									console.log('Volume series stored. Map size:', seriesRefs.size);
+								}}
+							/>
+						{/key}
 					{/if}
 
 					<!-- RSI Pane -->
 					{#if showRSI}
-						<Series
-							type="Line"
-							data={rsiData}
-							paneIndex={2}
-							options={{ color: '#2962FF', lineWidth: 2, title: 'RSI' }}
-						/>
+						{#key paneIndices['rsi']}
+							<Series
+								type="Line"
+								data={rsiData}
+								paneIndex={paneIndices['rsi']}
+								options={{ color: '#2962FF', lineWidth: 2, title: 'RSI' }}
+								onCreate={(series) => {
+									seriesRefs.set('rsi', {
+										series,
+										type: 'Line',
+										data: rsiData,
+										options: { color: '#2962FF', lineWidth: 2, title: 'RSI' }
+									});
+								}}
+							/>
+						{/key}
 					{/if}
 
 					<!-- MACD Pane -->
 					{#if showMACD}
-						<Series
-							type="Line"
-							data={macdData}
-							paneIndex={3}
-							options={{ color: '#2962FF', lineWidth: 2, title: 'MACD' }}
-						/>
+						{#key paneIndices['macd']}
+							<Series
+								type="Line"
+								data={macdData}
+								paneIndex={paneIndices['macd']}
+								options={{ color: '#2962FF', lineWidth: 2, title: 'MACD' }}
+								onCreate={(series) => {
+									seriesRefs.set('macd', {
+										series,
+										type: 'Line',
+										data: macdData,
+										options: { color: '#2962FF', lineWidth: 2, title: 'MACD' }
+									});
+								}}
+							/>
+						{/key}
 					{/if}
 					{#if showMACDSignal}
-						<Series
-							type="Line"
-							data={macdSignalData}
-							paneIndex={3}
-							options={{ color: '#FF6D00', lineWidth: 2, title: 'Signal' }}
-						/>
+						{#key paneIndices['macd-signal']}
+							<Series
+								type="Line"
+								data={macdSignalData}
+								paneIndex={paneIndices['macd-signal']}
+								options={{ color: '#FF6D00', lineWidth: 2, title: 'Signal' }}
+								onCreate={(series) => {
+									seriesRefs.set('macd-signal', {
+										series,
+										type: 'Line',
+										data: macdSignalData,
+										options: { color: '#FF6D00', lineWidth: 2, title: 'Signal' }
+									});
+								}}
+							/>
+						{/key}
 					{/if}
 					{#if showMACDHistogram}
-						<Series type="Histogram" data={macdHistogramData} paneIndex={3} />
+						{#key paneIndices['macd-histogram']}
+							<Series
+								type="Histogram"
+								data={macdHistogramData}
+								paneIndex={paneIndices['macd-histogram']}
+								onCreate={(series) => {
+									seriesRefs.set('macd-histogram', {
+										series,
+										type: 'Histogram',
+										data: macdHistogramData,
+										options: {}
+									});
+								}}
+							/>
+						{/key}
 					{/if}
 				</Chart>
 			</div>
@@ -516,7 +674,14 @@
 
 		<!-- Right Side: Object Tree -->
 		<div class="tree-section">
-			<ObjectTree {chart} objects={chartObjects} onToggleVisibility={handleToggleVisibility} onRemove={handleRemove} />
+			<ObjectTree
+				{chart}
+				objects={chartObjects}
+				onToggleVisibility={handleToggleVisibility}
+				onRemove={handleRemove}
+				onReorder={handleReorder}
+				onMoveToPane={handleMoveToPane}
+			/>
 		</div>
 	</div>
 </div>
