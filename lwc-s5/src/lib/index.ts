@@ -4,3 +4,6 @@ export * from './indicators/index.js';
 
 // Plugins
 export * from './plugins/trade-bubbles/index.js';
+
+// GridStack Integration
+export * from './gridstack/index.js';

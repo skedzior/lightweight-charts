@@ -27,6 +27,7 @@
 	},
 	"dependencies": {
 		"@thisux/sveltednd": "^0.0.20",
+		"gridstack": "^12.3.3",
 		"lightweight-charts": "^5.0.9"
 	}
 }
